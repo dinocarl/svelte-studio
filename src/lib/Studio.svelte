@@ -6,48 +6,17 @@
   import Text from './Text.svelte';
   import Radio from './Radio.svelte';
   import Select from './Select.svelte';
-  import { writable, derived } from 'svelte/store';
-  import { assocPath } from 'ramda';
+  import { assocPath } from './utils.js';
+  import { studioData, studioState } from './stores.js';
 
-  const studioData = writable({
-    RedThing:   { inputs: [
-      {name: 'text',  type: 'Text', val: 'Just some text'},
-      {name: 'variant',  type: 'Select', val: 'sm', values: ['sm', 'md', 'lg'] },
-    ] },
-    GreenThing: { inputs: [{name: 'text',  type: 'Text', val: 'Some other text'}] },
-    BlueThing:  { inputs: [
-      {name: 'text',  type: 'Text', val: 'Other text still'},
-      {name: 'variant',  type: 'Radio', val: 'md', values: ['sm', 'md', 'lg']},
-    ] },
-    CompX:      { inputs: [{name: 'title', type: 'Text', val: 'Just Some Title'}] },
-  });
-
-  const studioState = derived(
-    studioData,
-    ($studioData) => Object.entries($studioData)
-      .reduce(
-        (acc, [key, {inputs = []}]) => Object.assign(
-          acc,
-          { [key]: inputs.reduce(
-              (inputAcc, {name, val}) => Object.assign(
-                inputAcc,
-                { [name]: val }
-              ),
-              {}
-            ) }
-        ),
-        {}
-      )
-  );
-
-  const components = {
+  const componentList = {
     BlueThing,
     CompX,
     GreenThing,
     RedThing,
   };
 
-  const formComponents = {
+  const studioComponents = {
     Radio,
     Select,
     Text,
@@ -64,12 +33,13 @@
   const selectComponent = (comp) => () => {
     selected = comp
   }
+
 </script>
 
 <section class="layout">
   <fieldset class="select-space">
     <legend>Select a component</legend>
-    {#each Object.keys(components) as option}
+    {#each Object.keys(componentList) as option}
       <button class:selected={option === selected} on:click={selectComponent(option)}>{option}</button>
     {/each}
   </fieldset>
@@ -77,7 +47,7 @@
     {#if selected}
       <h3 class="output-heading">{selected}</h3>
       <div class="render-space">
-        <svelte:component this={components[selected]} {...$studioState[selected] || {}} />
+        <svelte:component this={componentList[selected]} {...$studioState[selected] || {}} />
       </div>
     {/if}
   </div>
@@ -85,7 +55,7 @@
     <div class="edit-space">
       <div class="edit-space-form">
         {#each $studioData?.[selected]?.inputs || [] as {type, ...rest}, idx}
-          <svelte:component this={formComponents[type]} 
+          <svelte:component this={studioComponents[type]} 
             {...rest}
             path={[selected, 'inputs', idx, 'val']}
             on:inputChange={storeUpdate} />
