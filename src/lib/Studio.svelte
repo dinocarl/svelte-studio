@@ -37,12 +37,15 @@
 </script>
 
 <section class="layout">
-  <fieldset class="select-space">
-    <legend>Select a component</legend>
-    {#each Object.keys(componentList) as option}
-      <button class:selected={option === selected} on:click={selectComponent(option)}>{option}</button>
-    {/each}
-  </fieldset>
+  <div class="left-col">
+    <h2>Component Studio</h2>
+    <fieldset class="select-space">
+      <legend>View a component</legend>
+      {#each Object.keys(componentList) as option}
+        <button class:selected={option === selected} on:click={selectComponent(option)}>{option}</button>
+      {/each}
+    </fieldset>
+  </div>
   <div class="output {selected ? 'viewing' : 'empty'}">
     {#if selected}
       <h3 class="output-heading">{selected}</h3>
@@ -69,25 +72,32 @@
   .layout {
     min-height: 100%;
     display: grid;
-    grid-template-columns: 25% 25% 25% 25%;
+    grid-template-columns: 20% 20% 20% 20% 20%;
     grid-template-rows: 50% 50%;
     font-size: 1rem;
     color: black;
   }
-  .select-space {
+  .left-col {
     grid-column: 1 ;
     grid-row: 1 / 3;
-    background-color: #ddd;
+    background-color: #384c8a;
+    color: #fff;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: end;
+  }
+  .left-col h2 { width: 100%; padding-left: 1rem; font-style: italic; }
+  .select-space {
     border: 0;
-    border-right: 1px solid #999;
     margin: 0;
     padding: 0;
+    width: 90%;
   }
   .select-space > legend {
-    font-size: .85rem;
+    font-size: .95rem;
     font-weight: 600;
     width: 100%;
-    padding: .25em .33em 1em;
+    padding: .25em 0;
     float: left;
   }
   .select-space > button {
@@ -96,28 +106,25 @@
     background: none;
     border: none;
     cursor: pointer;
-    padding: .75em;
-    border-bottom: 1px solid #999;
+    padding: .75em 1em;
     text-align: left;
-    color: black;
-  }
-  .select-space > button:first-of-type {
-    border-top: 1px solid #999
+    color: #fff;
+    border-radius: 4px 0 0 4px;
   }
   .select-space > button.selected {
-    background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 95%, rgba(153,153,153,1) 95%, rgba(153,153,153,1) 100%);
+    background-color: #282a54;
   }
   .output {
     background-color: #f7f7f7;
   }
   .output.viewing {
-    grid-column: 2 / 5 ;
+    grid-column: 2 / 6 ;
     grid-row: 1 / 2;
     display: flex;
     flex-flow: column nowrap;
   }
   .output.empty {
-    grid-column: 2 / 5 ;
+    grid-column: 2 / 6 ;
     grid-row: 1 / 3;
     display: flex;
     flex-flow: column nowrap;
@@ -137,7 +144,7 @@
     border-radius: 5px;
   }
   .edit-space {
-    grid-column: 2 / 5 ;
+    grid-column: 2 / 6 ;
     grid-row: 2 / 3;
     background-color: #f7f7f7;
     padding: .25em;
