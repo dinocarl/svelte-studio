@@ -2,10 +2,9 @@
   import RedThing from './RedThing.svelte';
   import GreenThing from './GreenThing.svelte';
   import BlueThing from './BlueThing.svelte';
+  import NestedThing from './NestedThing.svelte';
   import CompX from './ComponentX.svelte';
-  import Text from './Text.svelte';
-  import Radio from './Radio.svelte';
-  import Select from './Select.svelte';
+  import Inputs from './Inputs.svelte';
   import { assocPath } from './utils.js';
   import { studioData, studioState } from './stores.js';
 
@@ -13,16 +12,12 @@
     BlueThing,
     CompX,
     GreenThing,
+    NestedThing,
     RedThing,
   };
 
-  const studioComponents = {
-    Radio,
-    Select,
-    Text,
-  };
-
   const storeUpdate = (evt) => {
+    console.log({ det: evt.detail });
     studioData.update(
       (curr) => assocPath(evt.detail.path, evt.detail.val, curr)
     )
@@ -57,12 +52,7 @@
   {#if selected}
     <div class="edit-space">
       <div class="edit-space-form">
-        {#each $studioData?.[selected]?.inputs || [] as {type, ...rest}, idx}
-          <svelte:component this={studioComponents[type]} 
-            {...rest}
-            path={[selected, 'inputs', idx, 'val']}
-            on:inputChange={storeUpdate} />
-        {/each}
+        <Inputs inputs={$studioData?.[selected]?.inputs || []} parent={[selected]} on:inputChange={storeUpdate} />
       </div>
     </div>
   {/if}
@@ -151,7 +141,7 @@
   }
   .edit-space-form {
     display: grid;
-    grid-template-columns: 22% 75%;
+    grid-template-columns: 23% 75%;
     row-gap: .5em;
     column-gap: 2%;
   }
