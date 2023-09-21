@@ -17,14 +17,18 @@
 
 {#each inputs as {type, inputs: nestedInputs, ...rest}, idx}
   {#if nestedInputs && nestedInputs.length > 0}
-    <fieldset class="nested" class:branches={idx + 1 === inputs.length && depth > 0}>
-      <legend>{rest.name}</legend>
+    <div class="nested-group">
+      <div class="group-indicator depth-{depth}"></div>
+      <span
+        class="{depth > 0 ? `depth-${depth}` : ''} legend">
+        {rest.name}
+      </span>
       <svelte:self
         inputs={nestedInputs}
         parent={parent.concat('inputs', idx)}
         depth={depth + 1}
         on:inputChange />
-    </fieldset>
+    </div>
   {:else}
     <svelte:component this={studioComponents[type]} 
       {...rest}
@@ -36,49 +40,35 @@
 {/each}
 
 <style>
-  fieldset {
+  .legend {
     grid-column: 1 / span 2;
-    justify-self: end;
     font-family: Monaco, "Lucida Console", Courier, monospace;
+    font-size: .75em;
+    background-color: lightblue;
+    z-index: 1;
+  }
+  .depth-1.legend {margin-left: 1em;}
+  .nested-group {
+    grid-column: 1 / span 2;
     position: relative;
     display: grid;
-    width: 98%;
-    grid-template-columns: 22% 76%;
-    row-gap: .5em;
+    grid-template-columns: 23% 75%;
     column-gap: 2%;
-    margin: 1em 0 0 .5em;
-    padding: 0;
-    border-width: 0 0 0 1px;
+    row-gap: .5em;
+    padding-bottom: .5em;
+  }
+  .group-indicator {
+    grid-column: 1 / span 2;
+    position: absolute;
+    border-width: 0 0 1px 1px;
     border-color: #282a54;
     border-style: dotted;
-  }
-  .branches::after {
-    content: '';
-    display: block;
-    position: absolute;
-    border-left: 1px dotted #282a54;
-    border-bottom: 1px dotted #282a54;
-    min-height: 5px;
-    width: .5em;
     border-bottom-left-radius: 5px;
-    left: -2.3%;
-    top: -.75em;
-  }
-  .branches::before {
-    content: '';
-    display: block;
-    position: absolute;
-    border-left: 3px solid #f7f7f7;
-    left: -2.4%;
-    top: -.75em;
+    top: 0;
+    left: 0;
     bottom: 0;
+    right: 0;
   }
-  legend {
-    position: absolute;
-    margin: 0;
-    padding: 0;
-    left: -.9em;
-    top: -1.5em;
-    font-size: .75rem;
-  }
+  .depth-0 { left: .25em; }
+  .depth-1 { left: 1em; }
 </style>

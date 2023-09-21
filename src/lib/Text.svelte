@@ -46,26 +46,4 @@
     padding: .2em .5em;
     font-size: .9rem;
   }
-  [class^="depth"]::after {
-    content: '';
-    display: block;
-    position: absolute;
-    border-left: 1px dotted #282a54;
-    border-bottom: 1px dotted #282a54;
-    min-height: 5px;
-    min-width: 1em;
-    width: 100%;
-    border-bottom-left-radius: 5px;
-    left: -1px;
-    top: 5px;
-  }
-  .cover-line::before {
-    content: '';
-    display: block;
-    position: absolute;
-    border-left: 3px solid #f7f7f7;
-    left: -1px;
-    bottom: 0;
-    height: calc(100% - 5px);
-  }
  </style>
