@@ -6,20 +6,13 @@
   export let name = '';
   export let val = '';
   export let path = [];
-  export let depth = 0;
-  export let coverLine = false;
 
   const inputChange = () => {
     dispatch('inputChange', {path, val});
   }
 </script>
 
-<label
-  for={name}
-  class={depth > 0 ? `depth-${depth}` : ''}
-  class:cover-line={coverLine}>
-  <span>{name}</span>
-</label>
+<label for={name}>{name}</label>
 <input
   {name}
   type="text"
@@ -32,13 +25,6 @@
     font-size: .75rem;
     font-family: Monaco, "Lucida Console", Courier, monospace;
     position: relative;
-  }
-  label > span {
-    background-color: #f7f7f7;
-    position: absolute;
-    right: 0;
-    z-index: 1;
-    padding-left: 1.5em;
   }
   input {
     border-radius: 5px;

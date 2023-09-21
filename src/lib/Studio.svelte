@@ -137,7 +137,7 @@
     grid-column: 2 / 6 ;
     grid-row: 2 / 3;
     background-color: #f7f7f7;
-    padding: .25em;
+    padding: .5em;
   }
   .edit-space-form {
     display: grid;
