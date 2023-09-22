@@ -3,6 +3,7 @@
   import GreenThing from './GreenThing.svelte';
   import BlueThing from './BlueThing.svelte';
   import NestedThing from './NestedThing.svelte';
+  import ListThing from './ListThing.svelte';
   import CompX from './ComponentX.svelte';
   import Inputs from './Inputs.svelte';
   import { assocPath } from './utils.js';
@@ -12,6 +13,7 @@
     BlueThing,
     CompX,
     GreenThing,
+    ListThing,
     NestedThing,
     RedThing,
   };

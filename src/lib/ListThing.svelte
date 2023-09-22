@@ -1,12 +1,9 @@
 <script>
-  export let text = ''
-  export let variant = ''
+  export let items = []
 </script>
 
-<strong>{text} in Blue {variant}</strong>
-
-<style>
-  strong {
-    color: blue;
-  }
-</style>
+<ul>
+  {#each items as item}
+    <li>{item.itemName}</li>
+  {/each}
+</ul>

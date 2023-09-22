@@ -38,10 +38,14 @@ export const data = {
     inputs: [ {
       type: 'List',
       name: 'items',
-      inputs: [{
+      inputs: [ {
         type: 'Text',
         name: 'itemName',
         val: 'first thing',
+      }, {
+        type: 'Text',
+        name: 'itemName',
+        val: 'second thing',
       }, ],
     } ] },
   NestedThing: {
