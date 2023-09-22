@@ -3,19 +3,18 @@ import { data } from '../studioData.js';
 
 export const studioData = writable(data);
 
-const inputsToState = (inputs) => inputs.reduce(
-  (inputAcc, {name, val, type, inputs: nestedInputs}) => Object.assign(
-    inputAcc,
-    {
-      [name]: type === 'List' && nestedInputs && nestedInputs.length > 0
-      ? nestedInputs.map(({ name: inpName, val: inpVal }) => ({ [inpName]: inpVal }))
-      : nestedInputs
-      ? inputsToState(nestedInputs)
-      : val
-    }
-  ),
-  {}
+const createKV = (inputAcc, {name, val, type, inputs}) => Object.assign(
+  inputAcc,
+  {
+    [name]: type === 'List' && inputs && inputs?.length > 0
+    ? inputs.map( (inputItem) => createKV( {}, inputItem ) )
+    : type === 'Nested' && inputs && inputs?.length > 0
+    ? inputsToState(inputs)
+    : val
+  }
 );
+
+const inputsToState = (inputs) => inputs.reduce( createKV, {} );
 
 export const studioState = derived(
   studioData,
