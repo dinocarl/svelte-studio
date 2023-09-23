@@ -35,7 +35,12 @@
       </legend>
       {#if type === 'List'}
         <span class="full-width">
-          <button on:click={addItem(parent.concat('inputs', idx, 'inputs'))}>+</button>
+          <button
+            class="add"
+            title="Add new item to List"
+            on:click={addItem(parent.concat('inputs', idx, 'inputs'))}>
+            +
+          </button>
         </span>
       {/if}
       <svelte:self
@@ -56,7 +61,9 @@
       on:inputChange />
     {#if parentType === 'List'}
       <button
+        class="remove"
         disabled={inputs.length === 1}
+        title="Remove this item {inputs.length === 1 ? '(disabled)' : ''}"
         on:click={removeItem(parent.concat('inputs'), idx)}>
         x
       </button>
@@ -73,7 +80,7 @@
     grid-column: 1 / span 3;
     position: relative;
     display: grid;
-    grid-template-columns: 1fr 5fr min-content;
+    grid-template-columns: 1fr 3fr min-content;
     column-gap: 2%;
     row-gap: .5em;
     border: 0;
@@ -103,6 +110,27 @@
     border-bottom: 1px dotted #282a54;
     padding-left: 3px;
     width: 50px;
+  }
+  button {
+    font-family: Monaco, "Lucida Console", Courier, monospace;
+    cursor: pointer;
+    color: white;
+    border-radius: 50%;
+    border: none;
+    line-height: 1;
+    font-size: .95em;
+    width: 26px;
+    height: 26px;
+  }
+  button.add {
+    background-color: #54a454;
+  }
+  button.remove {
+    background-color: #df4747;
+  }
+  button:disabled {
+    background-color: #c3c3c3;
+    color: #666;
   }
   .depth-1 > legend { margin-left: 1em; }
 </style>

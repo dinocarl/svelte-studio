@@ -178,7 +178,7 @@
   }
   .edit-space-form {
     display: grid;
-    grid-template-columns: 1fr 5fr min-content;
+    grid-template-columns: 1fr 3fr min-content;
     row-gap: .5em;
     column-gap: 2%;
   }
