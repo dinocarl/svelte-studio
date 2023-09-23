@@ -22,11 +22,13 @@
 
  <style>
   label {
+    grid-column: 1;
     text-align: right;
     font-size: .75rem;
     font-family: Monaco, "Lucida Console", Courier, monospace;
   }
   select {
+    grid-column: 2;
     padding: .2em .5em;
     font-size: .9rem;
   }

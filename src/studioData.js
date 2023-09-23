@@ -47,6 +47,11 @@ export const data = {
         name: 'itemName',
         val: 'second thing',
       }, ],
+      sample: {
+        type: 'Text',
+        name: 'itemName',
+        val: 'new thing',
+      },
     } ] },
   NestedThing: {
     inputs: [ {

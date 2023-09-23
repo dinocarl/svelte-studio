@@ -21,12 +21,14 @@
 
  <style>
   label {
+    grid-column: 1;
     text-align: right;
     font-size: .75rem;
     font-family: Monaco, "Lucida Console", Courier, monospace;
     position: relative;
   }
   input {
+    grid-column: 2;
     border-radius: 5px;
     border: 1px solid #999;
     padding: .2em .5em;

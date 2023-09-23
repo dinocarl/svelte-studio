@@ -6,8 +6,9 @@
   import ListThing from './ListThing.svelte';
   import CompX from './ComponentX.svelte';
   import Inputs from './Inputs.svelte';
-  import { assocPath } from './utils.js';
+  import { assocPath, path } from './utils.js';
   import { studioData, studioState } from './stores.js';
+  import { data } from '../studioData.js';
 
   const componentList = {
     BlueThing,
@@ -18,18 +19,46 @@
     RedThing,
   };
 
-  const storeUpdate = (evt) => {
-    console.log({ det: evt.detail });
-    studioData.update(
-      (curr) => assocPath(evt.detail.path, evt.detail.val, curr)
-    )
-  }
-
   let selected = null;
 
   const selectComponent = (comp) => () => {
     selected = comp
-  }
+  };
+
+  const storeUpdate = (evt) => {
+    studioData.update(
+      (curr) => assocPath(
+        evt.detail.path,
+        evt.detail.val,
+        curr
+      )
+    );
+  };
+
+  const addInput = (evt) => {
+    studioData.update(
+      (curr) => {
+        const staticArr = path(evt.detail.path, data);
+        const newItem = path(evt.detail.path.slice(0, -1).concat('sample'), data) || staticArr[staticArr.length - 1];
+
+        return assocPath(
+          evt.detail.path,
+          [...path(evt.detail.path, curr), newItem],
+          curr
+        );
+      }
+    );
+  };
+
+  const removeInput = (evt) => {
+    studioData.update(
+      (curr) => assocPath(
+        evt.detail.path,
+        [...path(evt.detail.path, curr).slice(0, evt.detail.val), ...path(evt.detail.path, curr).slice(evt.detail.val + 1)],
+        curr
+      )
+    );
+  };
 
 </script>
 
@@ -54,7 +83,12 @@
   {#if selected}
     <div class="edit-space">
       <div class="edit-space-form">
-        <Inputs inputs={$studioData?.[selected]?.inputs || []} parent={[selected]} on:inputChange={storeUpdate} />
+        <Inputs
+          inputs={$studioData?.[selected]?.inputs || []}
+          parent={[selected]}
+          on:addToInputs={addInput}
+          on:removeFromInputs={removeInput}
+          on:inputChange={storeUpdate} />
       </div>
     </div>
   {/if}
@@ -140,10 +174,11 @@
     grid-row: 2 / 3;
     background-color: #f7f7f7;
     padding: .5em;
+    overflow-x: scroll;
   }
   .edit-space-form {
     display: grid;
-    grid-template-columns: 23% 75%;
+    grid-template-columns: 1fr 5fr min-content;
     row-gap: .5em;
     column-gap: 2%;
   }
