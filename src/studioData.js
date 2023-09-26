@@ -9,6 +9,10 @@ export const data = {
       name: 'variant',
       val: 'md',
       values: ['sm', 'md', 'lg'],
+    }, {
+      type: 'Bool',
+      name: 'testing',
+      val: true,
     }, ]
   },
   CompX: {

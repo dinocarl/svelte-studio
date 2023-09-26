@@ -3,6 +3,7 @@
   import Text from './Text.svelte';
   import Radio from './Radio.svelte';
   import Select from './Select.svelte';
+  import Bool from './Bool.svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -12,6 +13,7 @@
   export let parentType = null;
 
   const studioComponents = {
+    Bool,
     Radio,
     Select,
     Text,
