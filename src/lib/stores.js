@@ -9,8 +9,8 @@ const createKV = (inputAcc, {name, val, type, inputs}) => Object.assign(
     [name]: type === 'List' && inputs && inputs?.length > 0
     ? inputs.map( (inputItem) => createKV( {}, inputItem ) )
     : type === 'Nested' && inputs && inputs?.length > 0
-    ? inputsToState(inputs)
-    : val
+      ? inputsToState(inputs)
+      : val
   }
 );
 
