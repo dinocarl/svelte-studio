@@ -84,8 +84,8 @@
     <div class="edit-space">
       <div class="edit-space-form">
         <Inputs
-          inputs={$studioData?.[selected]?.inputs || []}
-          parent={[selected]}
+          inputs={$studioData?.components?.[selected]?.inputs || []}
+          parent={['components', selected]}
           on:addToInputs={addInput}
           on:removeFromInputs={removeInput}
           on:inputChange={storeUpdate} />
