@@ -7,7 +7,7 @@
   import CompX from './ComponentX.svelte';
   import Inputs from './Inputs.svelte';
   import { assocPath, path } from './utils.js';
-  import { studioData, studioState } from './stores.js';
+  import { studioData, studioState, pastStates } from './stores.js';
   import { data } from '../studioData.js';
 
   const componentList = {
@@ -20,6 +20,7 @@
   };
 
   let selected = null;
+  let showHistory = false;
 
   const selectComponent = (comp) => () => {
     selected = comp
@@ -60,6 +61,10 @@
     );
   };
 
+  const toggleHistory = () => {
+    showHistory = !showHistory;
+  }
+
 </script>
 
 <section class="layout">
@@ -71,6 +76,18 @@
         <button class:selected={option === selected} on:click={selectComponent(option)}>{option}</button>
       {/each}
     </fieldset>
+    {#if $pastStates?.length > 0}
+      <div class="history" class:slidUp={showHistory}>
+        <button on:click={toggleHistory}>History</button>
+        <ul class="states">
+          {#each $pastStates as state, idx}
+            <li>
+              {idx}
+            </li>
+          {/each}
+        </ul>
+      </div>
+    {/if}
   </div>
   <div class="output {selected ? 'viewing' : 'empty'}">
     {#if selected}
@@ -111,6 +128,7 @@
     display: flex;
     flex-flow: column nowrap;
     align-items: end;
+    position: relative;
   }
   .left-col h2 { width: 100%; padding-left: 1rem; font-style: italic; }
   .select-space {
@@ -181,5 +199,50 @@
     grid-template-columns: 1fr 3fr min-content;
     row-gap: .5em;
     column-gap: 2%;
+  }
+  .history {
+    background-color: #333;
+    position: absolute;
+    bottom: 0;
+    left: .5em;
+    width: 90%;
+    height: 2rem;
+    padding: 0 .4em;
+    border-radius: 15px 15px 0 0;
+    transition: height .4s ease-in-out;
+  }
+  .history.slidUp {
+    height: 13rem;
+    transition: height .4s ease-in-out;
+  }
+  .history button {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    font-size: 1.1rem;
+    background: none;
+    color: #fff;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    text-align: center;
+    font-style: italic;
+  }
+  .history .states {
+    height: 0%;
+    overflow: hidden;
+    background-color: #555;
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    transition: all .5s ease-in-out;
+  }
+  .history.slidUp .states {
+    height: calc(100% - 3rem);
+    max-height: 9.75rem;
+    margin: 1em 0 0 0;
+    padding: .2em;
+    overflow-y: auto;
+    transition: all .4s ease-in-out;
   }
 </style>
