@@ -17,3 +17,22 @@ export const path = ([hed, ...rest], obj) => typeof obj === 'undefined'
   : rest.length < 1
     ? obj[hed]
     : path(rest, obj[hed]);
+
+const createKV = (inputAcc, {name, val, type, inputs}) => Object.assign(
+  inputAcc,
+  {
+    [name]: type === 'List' && inputs && inputs?.length > 0
+    ? inputs.map( (inputItem) => createKV( {}, inputItem ) )
+    : type === 'Nested' && inputs && inputs?.length > 0
+      ? inputsToState(inputs)
+      : val
+  }
+);
+
+export const inputsToState = (inputs) => inputs.reduce( createKV, {} );
+
+export const formatTime = (dateObj) => `${
+  dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false })
+}.${
+  `${dateObj.getMilliseconds()}`.padStart(3, '0')
+}`;

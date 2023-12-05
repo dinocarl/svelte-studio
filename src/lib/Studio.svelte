@@ -6,9 +6,11 @@
   import ListThing from './ListThing.svelte';
   import CompX from './ComponentX.svelte';
   import Inputs from './Inputs.svelte';
-  import { assocPath, path } from './utils.js';
-  import { studioData, studioState, pastStates } from './stores.js';
+  import { assocPath, formatTime, inputsToState, path } from './utils.js';
+  import { studioData, pastStates, pastStatesLen } from './stores.js';
   import { data } from '../studioData.js';
+  import editIcon from '../assets/pen-square-svgrepo-com.svg';
+  import historyIcon from '../assets/book-open-svgrepo-com.svg';
 
   const componentList = {
     BlueThing,
@@ -19,11 +21,32 @@
     RedThing,
   };
 
+  let leftCol = 'components';
   let selected = null;
-  let showHistory = false;
+  let selectedComponent = null;
+  let selectedInputState = [];
+  let selectedRenderState = {};
 
   const selectComponent = (comp) => () => {
-    selected = comp
+    selected = comp;
+    studioData.update(
+      (curr) => assocPath(
+        ['selected'],
+        comp,
+        curr,
+      )
+    );
+    selectedComponent = comp;
+    selectedInputState = $studioData?.components?.[selectedComponent]?.inputs || [];
+    selectedRenderState = inputsToState(selectedInputState);
+  };
+
+  const reloadPastState = (idx) => () => {
+    selected = idx;
+    const selectedState = $pastStates[idx];
+    selectedComponent = selectedState.selected;
+    selectedInputState = selectedState?.components?.[selectedComponent]?.inputs || [];
+    selectedRenderState = inputsToState(selectedInputState);
   };
 
   const storeUpdate = (evt) => {
@@ -34,6 +57,8 @@
         curr
       )
     );
+    selectedInputState = $studioData?.components?.[selectedComponent]?.inputs || [];
+    selectedRenderState = inputsToState(selectedInputState);
   };
 
   const addInput = (evt) => {
@@ -49,6 +74,8 @@
         );
       }
     );
+    selectedInputState = $studioData?.components?.[selectedComponent]?.inputs || [];
+    selectedRenderState = inputsToState(selectedInputState);
   };
 
   const removeInput = (evt) => {
@@ -59,10 +86,15 @@
         curr
       )
     );
+    selectedInputState = $studioData?.components?.[selectedComponent]?.inputs || [];
+    selectedRenderState = inputsToState(selectedInputState);
   };
 
-  const toggleHistory = () => {
-    showHistory = !showHistory;
+  const updateLeftCol = (selectedNav) =>  () => {
+    leftCol = selectedNav;
+    selected = selectedNav === 'history'
+      ? $pastStatesLen
+      : selectedComponent;
   }
 
 </script>
@@ -70,38 +102,41 @@
 <section class="layout">
   <div class="left-col">
     <h2>Component Studio</h2>
+    <nav>
+      <button on:click={updateLeftCol('components')} disabled={leftCol === 'components'}>
+        <img src={editIcon} width="20" alt="Edit Icon" />
+      </button>
+      <button on:click={updateLeftCol('history')} disabled={leftCol === 'history'}>
+        <img src={historyIcon} width="20" alt="History Icon" />
+      </button>
+    </nav>
     <fieldset class="select-space">
-      <legend>View a component</legend>
-      {#each Object.keys(componentList) as option}
-        <button class:selected={option === selected} on:click={selectComponent(option)}>{option}</button>
-      {/each}
+      {#if leftCol === 'components'}
+        <legend>View a component</legend>
+        {#each Object.keys(componentList) as option}
+          <button class:selected={option === selectedComponent} on:click={selectComponent(option)}>{option}</button>
+        {/each}
+      {:else}
+        <legend>View history</legend>
+        {#each $pastStates as state, idx}
+          <button class:selected={idx === selected} on:click={reloadPastState(idx)}>{formatTime(new Date(state.ts))}</button>
+        {/each}
+      {/if}
     </fieldset>
-    {#if $pastStates?.length > 0}
-      <div class="history" class:slidUp={showHistory}>
-        <button on:click={toggleHistory}>History</button>
-        <ul class="states">
-          {#each $pastStates as state, idx}
-            <li>
-              {idx}
-            </li>
-          {/each}
-        </ul>
-      </div>
-    {/if}
   </div>
-  <div class="output {selected ? 'viewing' : 'empty'}">
-    {#if selected}
-      <h3 class="output-heading">{selected}</h3>
+  <div class="output {selectedComponent ? 'viewing' : 'empty'}">
+    {#if selectedComponent}
+      <h3 class="output-heading">{selectedComponent}</h3>
       <div class="render-space">
-        <svelte:component this={componentList[selected]} {...$studioState[selected] || {}} />
+        <svelte:component this={componentList[selectedComponent]} {...selectedRenderState} />
       </div>
     {/if}
   </div>
-  {#if selected}
+  {#if selectedComponent}
     <div class="edit-space">
       <div class="edit-space-form">
         <Inputs
-          inputs={$studioData?.components?.[selected]?.inputs || []}
+          inputs={selectedInputState}
           parent={['components', selected]}
           on:addToInputs={addInput}
           on:removeFromInputs={removeInput}
@@ -131,6 +166,25 @@
     position: relative;
   }
   .left-col h2 { width: 100%; padding-left: 1rem; font-style: italic; }
+  nav {
+    width: 100%;
+    text-align: center;
+  }
+  nav > button {
+    background: rgba(0,0,0, .3);
+    padding: .25em;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+    color: white;
+    width: 30%;
+    text-align: center;
+    cursor: pointer;
+  }
+  nav > button:disabled {
+    background: rgba(255,255,255, .2);
+    cursor: not-allowed;
+  }
   .select-space {
     border: 0;
     margin: 0;
@@ -199,50 +253,5 @@
     grid-template-columns: 1fr 3fr min-content;
     row-gap: .5em;
     column-gap: 2%;
-  }
-  .history {
-    background-color: #333;
-    position: absolute;
-    bottom: 0;
-    left: .5em;
-    width: 90%;
-    height: 2rem;
-    padding: 0 .4em;
-    border-radius: 15px 15px 0 0;
-    transition: height .4s ease-in-out;
-  }
-  .history.slidUp {
-    height: 13rem;
-    transition: height .4s ease-in-out;
-  }
-  .history button {
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    font-size: 1.1rem;
-    background: none;
-    color: #fff;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    text-align: center;
-    font-style: italic;
-  }
-  .history .states {
-    height: 0%;
-    overflow: hidden;
-    background-color: #555;
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-    transition: all .5s ease-in-out;
-  }
-  .history.slidUp .states {
-    height: calc(100% - 3rem);
-    max-height: 9.75rem;
-    margin: 1em 0 0 0;
-    padding: .2em;
-    overflow-y: auto;
-    transition: all .4s ease-in-out;
   }
 </style>
