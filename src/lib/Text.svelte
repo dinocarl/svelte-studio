@@ -6,9 +6,10 @@
   export let name = '';
   export let val = '';
   export let path = [];
+  export let objPathStr = '';
 
   const inputChange = () => {
-    dispatch('inputChange', {path, val});
+    dispatch('inputChange', {path, val, msg: `mod: ${objPathStr}`});
   }
 </script>
 

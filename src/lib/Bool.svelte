@@ -6,9 +6,10 @@
   export let name = '';
   export let val = false;
   export let path = [];
+  export let objPathStr = '';
 
   const inputChange = (evt) => {
-    dispatch('inputChange', {path, val: evt.target.checked});
+    dispatch('inputChange', {path, val: evt.target.checked, msg: `mod: ${objPathStr}`});
   }
 </script>
 

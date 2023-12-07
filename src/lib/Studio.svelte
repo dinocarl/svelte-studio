@@ -30,15 +30,14 @@
   const selectComponent = (comp) => () => {
     selected = comp;
     studioData.update(
-      (curr) => assocPath(
-        ['selected'],
-        comp,
+      (curr) => Object.assign(
+        {},
         curr,
+        {selected: comp, msg: `sel: ${comp}`},
       )
     );
     selectedComponent = comp;
     selectedInputState = $studioData?.components?.[selectedComponent]?.inputs || [];
-    selectedRenderState = inputsToState(selectedInputState);
   };
 
   const reloadPastState = (idx) => () => {
@@ -46,19 +45,19 @@
     const selectedState = $pastStates[idx];
     selectedComponent = selectedState.selected;
     selectedInputState = selectedState?.components?.[selectedComponent]?.inputs || [];
-    selectedRenderState = inputsToState(selectedInputState);
   };
 
   const storeUpdate = (evt) => {
     studioData.update(
-      (curr) => assocPath(
-        evt.detail.path,
-        evt.detail.val,
+      (curr) => [
+        [evt.detail.path, evt.detail.val],
+        [['msg'], evt.detail.msg],
+      ].reduce(
+        (acc, item) => assocPath(item[0], item[1], acc),
         curr
       )
     );
     selectedInputState = $studioData?.components?.[selectedComponent]?.inputs || [];
-    selectedRenderState = inputsToState(selectedInputState);
   };
 
   const addInput = (evt) => {
@@ -67,27 +66,32 @@
         const staticArr = path(evt.detail.path, data);
         const newItem = path(evt.detail.path.slice(0, -1).concat('sample'), data) || staticArr[staticArr.length - 1];
 
-        return assocPath(
-          evt.detail.path,
-          [...path(evt.detail.path, curr), newItem],
+        return [
+          [evt.detail.path, [...path(evt.detail.path, curr), newItem]],
+          [['msg'], evt.detail.msg],
+        ].reduce(
+          (acc, item) => assocPath(item[0], item[1], acc),
           curr
         );
       }
     );
     selectedInputState = $studioData?.components?.[selectedComponent]?.inputs || [];
-    selectedRenderState = inputsToState(selectedInputState);
   };
 
   const removeInput = (evt) => {
     studioData.update(
-      (curr) => assocPath(
-        evt.detail.path,
-        [...path(evt.detail.path, curr).slice(0, evt.detail.val), ...path(evt.detail.path, curr).slice(evt.detail.val + 1)],
+      (curr) => [
+        [
+          evt.detail.path,
+          path(evt.detail.path, curr).slice(0, evt.detail.val).concat(path(evt.detail.path, curr).slice(evt.detail.val + 1)),
+        ],
+        [['msg'], evt.detail.msg],
+      ].reduce(
+        (acc, item) => assocPath(item[0], item[1], acc),
         curr
       )
     );
     selectedInputState = $studioData?.components?.[selectedComponent]?.inputs || [];
-    selectedRenderState = inputsToState(selectedInputState);
   };
 
   const updateLeftCol = (selectedNav) =>  () => {
@@ -95,6 +99,10 @@
     selected = selectedNav === 'history'
       ? $pastStatesLen
       : selectedComponent;
+  }
+
+  $: {
+    selectedRenderState = inputsToState(selectedInputState);
   }
 
 </script>
@@ -110,7 +118,7 @@
         <img src={historyIcon} width="20" alt="History Icon" />
       </button>
     </nav>
-    <fieldset class="select-space">
+    <fieldset class="select-space {leftCol}">
       {#if leftCol === 'components'}
         <legend>View a component</legend>
         {#each Object.keys(componentList) as option}
@@ -119,7 +127,12 @@
       {:else}
         <legend>View history</legend>
         {#each $pastStates as state, idx}
-          <button class:selected={idx === selected} on:click={reloadPastState(idx)}>{formatTime(new Date(state.ts))}</button>
+          <button
+            class:selected={idx === selected}
+            on:click={reloadPastState(idx)}
+            title={formatTime(new Date(state.ts))}>
+            {state.msg}
+          </button>
         {/each}
       {/if}
     </fieldset>
@@ -137,7 +150,8 @@
       <div class="edit-space-form">
         <Inputs
           inputs={selectedInputState}
-          parent={['components', selected]}
+          parent={['components', selectedComponent]}
+          objPathStr={selectedComponent || ''}
           on:addToInputs={addInput}
           on:removeFromInputs={removeInput}
           on:inputChange={storeUpdate} />
@@ -162,10 +176,19 @@
     color: #fff;
     display: flex;
     flex-flow: column nowrap;
-    align-items: end;
-    position: relative;
   }
-  .left-col h2 { width: 100%; padding-left: 1rem; font-style: italic; }
+  .left-col h2 { text-align: center; font-style: italic; }
+  .left-col .history > button {
+    font-family: Monaco, "Lucida Console", Courier, monospace;
+    font-size: .66rem;
+    border-color: silver;
+    border-style: solid;
+    border-width: 1px 0 0 1px;
+    padding: .4em;
+  }
+  .left-col .history > button:last-child {
+    border-bottom-width: 1px;
+  }
   nav {
     width: 100%;
     text-align: center;
@@ -189,18 +212,19 @@
     border: 0;
     margin: 0;
     padding: 0;
-    width: 90%;
+    white-space: nowrap;
+    min-width: 60px;
   }
   .select-space > legend {
     font-size: .95rem;
     font-weight: 600;
-    width: 100%;
+    width: 90%;
     padding: .25em 0;
+    margin-left: 10%;
     float: left;
   }
   .select-space > button {
     display: block;
-    width: 100%;
     background: none;
     border: none;
     cursor: pointer;
@@ -208,6 +232,10 @@
     text-align: left;
     color: #fff;
     border-radius: 4px 0 0 4px;
+    width: 90%;
+    margin-left: 10%;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .select-space > button.selected {
     background-color: #282a54;

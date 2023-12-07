@@ -1,5 +1,6 @@
 export const data = {
   selected: '',
+  msg: 'New session',
   components: {
     BlueThing:  {
       inputs: [ {

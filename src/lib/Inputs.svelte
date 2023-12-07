@@ -9,6 +9,7 @@
 
   export let inputs = [];
   export let parent = [];
+  export let objPathStr = '';
   export let depth = 0;
   export let parentType = null;
 
@@ -19,12 +20,12 @@
     Text,
   };
 
-  const addItem = (parent) => () => {
-    dispatch('addToInputs', { path: parent })
+  const addItem = (parent, parentStr) => () => {
+    dispatch('addToInputs', { path: parent, msg: `add: ${objPathStr}.${parentStr}` })
   };
 
   const removeItem = (parent, pos) => () => {
-    dispatch('removeFromInputs', { path: parent, val: pos })
+    dispatch('removeFromInputs', { path: parent, val: pos, msg: `rem: ${objPathStr}.${pos}` })
   };
 
 </script>
@@ -40,7 +41,7 @@
           <button
             class="add"
             title="Add new item to List"
-            on:click={addItem(parent.concat('inputs', idx, 'inputs'))}>
+            on:click={addItem(parent.concat('inputs', idx, 'inputs'), rest.name)}>
             +
           </button>
         </span>
@@ -48,6 +49,7 @@
       <svelte:self
         inputs={nestedInputs}
         parent={parent.concat('inputs', idx)}
+        objPathStr={objPathStr.concat(`.${rest.name}`)}
         depth={depth + 1}
         parentType={type}
         on:addToInputs
@@ -58,6 +60,7 @@
     <svelte:component this={studioComponents[type]} 
       {...rest}
       path={parent.concat('inputs', idx, 'val')}
+      objPathStr={objPathStr.concat(`${parentType === 'List' ? `.${idx}` : ''}.${rest.name}`)}
       on:addToInputs
       on:removeFromInputs
       on:inputChange />
