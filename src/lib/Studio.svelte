@@ -21,9 +21,10 @@
     RedThing,
   };
 
-  let leftCol = 'components';
+  let mode = 'selectComp';
   let selected = null;
   let selectedComponent = null;
+  let selectedHistoryPos = null;
   let selectedInputState = [];
   let selectedRenderState = {};
 
@@ -42,12 +43,17 @@
 
   const reloadPastState = (idx) => () => {
     selected = idx;
+    selectedHistoryPos = idx;
     const selectedState = $pastStates[idx];
     selectedComponent = selectedState.selected;
     selectedInputState = selectedState?.components?.[selectedComponent]?.inputs || [];
   };
 
   const storeUpdate = (evt) => {
+    if (mode === 'history' && selectedHistoryPos !== 0) {
+      studioData.set($pastStates[selectedHistoryPos]);
+      selectedHistoryPos = 0;
+    }
     studioData.update(
       (curr) => [
         [evt.detail.path, evt.detail.val],
@@ -61,6 +67,10 @@
   };
 
   const addInput = (evt) => {
+    if (mode === 'history' && selectedHistoryPos !== 0) {
+      studioData.set($pastStates[selectedHistoryPos]);
+      selectedHistoryPos = 0;
+    }
     studioData.update(
       (curr) => {
         const staticArr = path(evt.detail.path, data);
@@ -79,6 +89,10 @@
   };
 
   const removeInput = (evt) => {
+    if (mode === 'history' && selectedHistoryPos !== 0) {
+      studioData.set($pastStates[selectedHistoryPos]);
+      selectedHistoryPos = 0;
+    }
     studioData.update(
       (curr) => [
         [
@@ -94,10 +108,11 @@
     selectedInputState = $studioData?.components?.[selectedComponent]?.inputs || [];
   };
 
-  const updateLeftCol = (selectedNav) =>  () => {
-    leftCol = selectedNav;
+  const updateLeftCol = (selectedNav) => () => {
+    mode = selectedNav;
+    selectedHistoryPos = 0;
     selected = selectedNav === 'history'
-      ? $pastStatesLen
+      ? 0
       : selectedComponent;
   }
 
@@ -111,15 +126,15 @@
   <div class="left-col">
     <h2>Component Studio</h2>
     <nav>
-      <button on:click={updateLeftCol('components')} disabled={leftCol === 'components'}>
+      <button on:click={updateLeftCol('selectComp')} disabled={mode === 'selectComp'}>
         <img src={editIcon} width="20" alt="Edit Icon" />
       </button>
-      <button on:click={updateLeftCol('history')} disabled={leftCol === 'history'}>
+      <button on:click={updateLeftCol('history')} disabled={mode === 'history'}>
         <img src={historyIcon} width="20" alt="History Icon" />
       </button>
     </nav>
-    <fieldset class="select-space {leftCol}">
-      {#if leftCol === 'components'}
+    <fieldset class="select-space {mode}">
+      {#if mode === 'selectComp'}
         <legend>View a component</legend>
         {#each Object.keys(componentList) as option}
           <button class:selected={option === selectedComponent} on:click={selectComponent(option)}>{option}</button>
@@ -128,7 +143,7 @@
         <legend>View history</legend>
         {#each $pastStates as state, idx}
           <button
-            class:selected={idx === selected}
+            class:selected={idx === selectedHistoryPos}
             on:click={reloadPastState(idx)}
             title={formatTime(new Date(state.ts))}>
             {state.msg}
@@ -163,6 +178,8 @@
 <style>
   .layout {
     min-height: 100%;
+    max-height: 100%;
+    overflow: hidden;
     display: grid;
     grid-template-columns: 20% 20% 20% 20% 20%;
     grid-template-rows: 50% 50%;
@@ -214,6 +231,7 @@
     padding: 0;
     white-space: nowrap;
     min-width: 60px;
+    overflow-y: auto;
   }
   .select-space > legend {
     font-size: .95rem;

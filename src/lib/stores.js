@@ -1,4 +1,5 @@
 import { writable, derived } from 'svelte/store';
+import { assocPath } from './utils.js';
 import { data } from '../studioData.js';
 
 export const studioData = writable(data);
@@ -10,7 +11,7 @@ export const pastStates = derived(
   studioData,
   ($studioData, set) => {
     const timeoutId = setTimeout(() => {
-      pastStatesArr = pastStatesArr.concat(Object.assign({}, $studioData, {ts: Date.now()}));
+      pastStatesArr = [assocPath(['ts'], Date.now(), $studioData)].concat(pastStatesArr);
 
       return set(
         pastStatesArr
