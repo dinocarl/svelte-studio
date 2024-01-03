@@ -9,7 +9,7 @@
   export let values = [];
 
   const inputChange = () => {
-    dispatch('inputChange', {path, val, msg: `mod: ${path[1]}.${name}`});
+    dispatch('inputChange', {path, val, msg: `mod: ${path[1]}.${name}`, type: 'valChange'});
   }
 </script>
 

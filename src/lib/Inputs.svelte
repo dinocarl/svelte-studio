@@ -21,11 +21,11 @@
   };
 
   const addItem = (parent, parentStr) => () => {
-    dispatch('addToInputs', { path: parent, msg: `add: ${objPathStr}.${parentStr}` })
+    dispatch('inputChange', { type: 'add', path: parent, msg: `add: ${objPathStr}.${parentStr}` })
   };
 
   const removeItem = (parent, pos) => () => {
-    dispatch('removeFromInputs', { path: parent, val: pos, msg: `rem: ${objPathStr}.${pos}` })
+    dispatch('inputChange', { type: 'remove', path: parent, val: pos, msg: `rem: ${objPathStr}.${pos}` })
   };
 
 </script>
@@ -52,8 +52,6 @@
         objPathStr={objPathStr.concat(`.${rest.name}`)}
         depth={depth + 1}
         parentType={type}
-        on:addToInputs
-        on:removeFromInputs
         on:inputChange />
     </fieldset>
   {:else}

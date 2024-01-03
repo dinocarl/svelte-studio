@@ -6,8 +6,8 @@
   import ListThing from './ListThing.svelte';
   import CompX from './ComponentX.svelte';
   import Inputs from './Inputs.svelte';
-  import { assocPath, formatTime, inputsToState, path } from './utils.js';
-  import { studioData, pastStates, pastStatesLen } from './stores.js';
+  import { assocPaths, formatTime, inputsToState, path } from './utils.js';
+  import { studioData, pastStates } from './stores.js';
   import { data } from '../studioData.js';
   import editIcon from '../assets/pen-square-svgrepo-com.svg';
   import historyIcon from '../assets/book-open-svgrepo-com.svg';
@@ -21,7 +21,7 @@
     RedThing,
   };
 
-  let mode = 'selectComp';
+  let mode = 'compSelect';
   let selected = null;
   let selectedComponent = null;
   let selectedHistoryPos = null;
@@ -49,71 +49,48 @@
     selectedInputState = selectedState?.components?.[selectedComponent]?.inputs || [];
   };
 
-  const storeUpdate = (evt) => {
-    if (mode === 'history' && selectedHistoryPos !== 0) {
-      studioData.set($pastStates[selectedHistoryPos]);
-      selectedHistoryPos = 0;
-    }
-    studioData.update(
-      (curr) => [
-        [evt.detail.path, evt.detail.val],
-        [['msg'], evt.detail.msg],
-      ].reduce(
-        (acc, item) => assocPath(item[0], item[1], acc),
-        curr
-      )
-    );
-    selectedInputState = $studioData?.components?.[selectedComponent]?.inputs || [];
+  const studioDataUpdate = {
+    valChange: (_, {val}) => val,
+
+    add: (curr, {path: passedPath}) => [
+      ...path(passedPath, curr),
+      path(passedPath.slice(0, -1).concat('sample'), data)
+    ],
+
+    remove: (curr, {path: passedPath, val}) => path(passedPath, curr)
+      .slice(0, val)
+      .concat(
+        path(passedPath, curr).slice(val + 1)
+      ),
   };
 
-  const addInput = (evt) => {
+  const onEditSpaceChange = ({detail: {type = 'valChange', msg, ...rest} = {}} = {}) => {
     if (mode === 'history' && selectedHistoryPos !== 0) {
       studioData.set($pastStates[selectedHistoryPos]);
       selectedHistoryPos = 0;
     }
-    studioData.update(
-      (curr) => {
-        const staticArr = path(evt.detail.path, data);
-        const newItem = path(evt.detail.path.slice(0, -1).concat('sample'), data) || staticArr[staticArr.length - 1];
 
-        return [
-          [evt.detail.path, [...path(evt.detail.path, curr), newItem]],
-          [['msg'], evt.detail.msg],
-        ].reduce(
-          (acc, item) => assocPath(item[0], item[1], acc),
-          curr
-        );
-      }
-    );
-    selectedInputState = $studioData?.components?.[selectedComponent]?.inputs || [];
-  };
-
-  const removeInput = (evt) => {
-    if (mode === 'history' && selectedHistoryPos !== 0) {
-      studioData.set($pastStates[selectedHistoryPos]);
-      selectedHistoryPos = 0;
-    }
     studioData.update(
-      (curr) => [
+      (curr) => assocPaths(
         [
-          evt.detail.path,
-          path(evt.detail.path, curr).slice(0, evt.detail.val).concat(path(evt.detail.path, curr).slice(evt.detail.val + 1)),
+          [rest.path, studioDataUpdate[type](curr, rest)],
+          [['msg'], msg],
         ],
-        [['msg'], evt.detail.msg],
-      ].reduce(
-        (acc, item) => assocPath(item[0], item[1], acc),
         curr
       )
     );
+
     selectedInputState = $studioData?.components?.[selectedComponent]?.inputs || [];
   };
 
   const updateLeftCol = (selectedNav) => () => {
     mode = selectedNav;
     selectedHistoryPos = 0;
-    selected = selectedNav === 'history'
-      ? 0
-      : selectedComponent;
+    if (selectedNav === 'compSelect') {
+      selectedComponent = $pastStates[0].selected;
+      selected = selectedComponent;
+      selectedInputState = $studioData?.components?.[selectedComponent]?.inputs || [];
+    }
   }
 
   $: {
@@ -126,7 +103,7 @@
   <div class="left-col">
     <h2>Component Studio</h2>
     <nav>
-      <button on:click={updateLeftCol('selectComp')} disabled={mode === 'selectComp'}>
+      <button on:click={updateLeftCol('compSelect')} disabled={mode === 'compSelect'}>
         <img src={editIcon} width="20" alt="Edit Icon" />
       </button>
       <button on:click={updateLeftCol('history')} disabled={mode === 'history'}>
@@ -134,7 +111,7 @@
       </button>
     </nav>
     <fieldset class="select-space {mode}">
-      {#if mode === 'selectComp'}
+      {#if mode === 'compSelect'}
         <legend>View a component</legend>
         {#each Object.keys(componentList) as option}
           <button class:selected={option === selectedComponent} on:click={selectComponent(option)}>{option}</button>
@@ -167,9 +144,7 @@
           inputs={selectedInputState}
           parent={['components', selectedComponent]}
           objPathStr={selectedComponent || ''}
-          on:addToInputs={addInput}
-          on:removeFromInputs={removeInput}
-          on:inputChange={storeUpdate} />
+          on:inputChange={onEditSpaceChange} />
       </div>
     </div>
   {/if}

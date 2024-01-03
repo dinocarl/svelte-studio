@@ -9,7 +9,7 @@
   export let objPathStr = '';
 
   const inputChange = () => {
-    dispatch('inputChange', {path, val, msg: `mod: ${objPathStr}`});
+    dispatch('inputChange', {path, val, msg: `mod: ${objPathStr}`, type: 'valChange'});
   }
 </script>
 

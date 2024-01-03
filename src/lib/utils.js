@@ -31,6 +31,11 @@ const createKV = (inputAcc, {name, val, type, inputs}) => Object.assign(
 
 export const inputsToState = (inputs) => inputs.reduce( createKV, {} );
 
+export const assocPaths = (pathArr, initialState) => pathArr.reduce(
+  (acc, [updatePath, newVal]) => assocPath(updatePath, newVal, acc),
+  initialState
+);
+
 export const formatTime = (dateObj) => `${
   dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false })
 }.${
